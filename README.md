@@ -19,7 +19,7 @@ Supported languages (more will be added)
 
 * C
 * C++
-* Python
+* Python //not working as of now
 
 Cursor movement can be done via keyboard arrows or mouse scroll. Mouse click into set position not supported, at will not be implemented.
 
