@@ -52,3 +52,5 @@ To uninstall
 ```bash
 sudo bash uninstall.sh
 ```
+### Known bugs
+* app crashes when terminal window changes dimensions, this applies to tmux as well
