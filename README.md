@@ -13,7 +13,7 @@ States explained
 
 Screen
 ![](screen.png)
-In this screen you can me by "IDE" setup with 3 instances of tin.
+In this screen you can see my "IDE" setup with 3 instances of tin.
 
 Usage: tin `<filename>`
 
