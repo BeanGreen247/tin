@@ -1,6 +1,6 @@
 /* tin -- A very simple editor. Does not depend on libcurses, directly emits VT100
  *         escapes on the terminal. */
-#define TIN_VERSION "devduild_alpha_0.0.1"
+#define TIN_VERSION "devduild_alpha_0.0.2"
 
 #ifdef __linux__
 #define _POSIX_C_SOURCE 200809L
@@ -49,6 +49,15 @@ struct editorSyntaxPython {
     char **filematch;
     char **keywords;
     char singleline_comment_start[2];
+    int flags;
+};
+
+struct editorSyntaxRust {
+    char **filematch;
+    char **keywords;
+    char singleline_comment_start[2];
+    char multiline_comment_start[3];
+    char multiline_comment_end[3];
     int flags;
 };
 
@@ -174,6 +183,22 @@ char *Python_keywords[] = {
 	"bytearray|","memoryview|",NULL
 };
 
+/* Rust */
+char *Rust_extensions[] = {".rs",NULL};
+char *Rust_keywords[] = {
+	/* Rust Keywords */
+	"as","break","const","continue","crate","else","enum","extern","false","fn",
+  "for","if","impl","in","let","loop","match","mod","move","mut","pub","ref",
+  "return","self","Self","static","struct","super","trait","true","type",
+  "unsafe","use","where","while","async","await","dyn","abstract","become",
+  "box","do","final","macro","override","priv","typeof","unsized","virtual",
+  "yield","try"
+
+	/* Rust types */
+        "i8|","i16|","i32|","i64|","i128|","isize|","u8|","u16|","u32|","u64|",
+        "u128|","usize|",NULL
+};
+
 /* Here we define an array of syntax highlights by extensions, keywords,
  * comments delimiters and flags. */
 struct editorSyntax HLDB[] = {
@@ -190,15 +215,27 @@ struct editorSyntax HLDB[] = {
 
 struct editorSyntaxPython HLDB_Python[] = {
     {
-	/* Python */
-	Python_extensions,
-	Python_keywords,
-        "#",
-        HL_HIGHLIGHT_STRINGS | HL_HIGHLIGHT_NUMBERS
+	     /* Python */
+	     Python_extensions,
+	     Python_keywords,
+       "#",
+       HL_HIGHLIGHT_STRINGS | HL_HIGHLIGHT_NUMBERS
     }
 };
 
 #define HLDB_Python_ENTRIES (sizeof(HLDB_Python)/sizeof(HLDB_Python[0]))
+
+struct editorSyntaxRust HLDB_Rust[] = {
+    {
+	     /* Rust */
+	     Rust_extensions,
+	     Rust_keywords,
+       "//","/*","*/",
+       HL_HIGHLIGHT_STRINGS | HL_HIGHLIGHT_NUMBERS
+    }
+};
+
+#define HLDB_Rust_ENTRIES (sizeof(HLDB_Rust)/sizeof(HLDB_Rust[0]))
 
 /* ======================= Low level terminal handling ====================== */
 
@@ -331,8 +368,8 @@ int getCursorPosition(int ifd, int ofd, int *rows, int *cols) {
  * call fails the function will try to query the terminal itself.
  * Returns 0 on success, -1 on error. */
 
-/* 
-* This section is WIP 
+/*
+* This section is WIP
 */
 
 int getWindowSize(int ifd, int ofd, int *rows, int *cols) {
@@ -388,12 +425,12 @@ int getWindowSize(int ifd, int ofd, int *rows, int *cols) {
         //retval = getCursorPosition(ifd,ofd,rows,cols);
         *cols = ws.ws_col;
         *rows = ws.ws_row;
-	 updateWindowSize();       
+	 updateWindowSize();
 	 //retval = getCursorPosition(ifd,ofd,rows,cols);
         //if (retval == -1) {
         //*cols = ws.ws_col;
         *rows = ws.ws_row;
-  	 editorRefreshScreen();      
+  	 editorRefreshScreen();
 	 //return 0;
     } else {
       //retval = getCursorPosition(ifd,ofd,rows,cols);
@@ -630,6 +667,21 @@ void editorSelectSyntaxHighlight(char *filename) {
     }
     for (unsigned int j = 0; j < HLDB_Python_ENTRIES; j++) {
         struct editorSyntax *s = HLDB_Python+j;
+        unsigned int i = 0;
+        while(s->filematch[i]) {
+            char *p;
+            int patlen = strlen(s->filematch[i]);
+            if ((p = strstr(filename,s->filematch[i])) != NULL) {
+                if (s->filematch[i][0] != '.' || p[patlen] == '\0') {
+                    E.syntax = s;
+                    return;
+                }
+            }
+            i++;
+        }
+    }
+    for (unsigned int j = 0; j < HLDB_Rust_ENTRIES; j++) {
+        struct editorSyntax *s = HLDB_Rust+j;
         unsigned int i = 0;
         while(s->filematch[i]) {
             char *p;
