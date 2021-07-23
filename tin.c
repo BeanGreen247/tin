@@ -1,6 +1,6 @@
 /* tin -- A very simple editor. Does not depend on libcurses, directly emits VT100
  *         escapes on the terminal. */
-#define TIN_VERSION "devduild_alpha_0.0.2"
+#define TIN_VERSION "devduild_alpha_0.0.3"
 
 #ifdef __linux__
 #define _POSIX_C_SOURCE 200809L
@@ -48,7 +48,7 @@ struct editorSyntax {
 struct editorSyntaxPython {
     char **filematch;
     char **keywords;
-    char singleline_comment_start[2];
+    char singleline_comment_start[3];
     int flags;
 };
 
@@ -361,7 +361,7 @@ int getCursorPosition(int ifd, int ofd, int *rows, int *cols) {
     /* Parse it. */
     if (buf[0] != ESC || buf[1] != '[') return -1;
     if (sscanf(buf+2,"%d;%d",rows,cols) != 2) return -1;
-    return 0;
+	    return 0;
 }
 
 /* Try to get the number of columns in the current terminal. If the ioctl()
@@ -568,7 +568,8 @@ void editorUpdateSyntax(erow *row) {
             if (*p == in_string) in_string = 0;
             p++; i++;
             continue;
-        } else {
+        }
+	 else {
             if (*p == '"' || *p == '\'') {
                 in_string = *p;
                 row->hl[i] = HL_STRING;

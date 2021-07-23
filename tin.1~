@@ -1,6 +1,6 @@
 .\" Manpage for tin.
 .\" Contact mozdrent@gmail.com.in to correct errors or typos.
-.TH man 8 "23 July 2021" "devduild_alpha_0.0.3" "tin man page"
+.TH man 8 "23 July 2021" "devduild_alpha_0.0.2" "tin man page"
 .SH NAME
 tin \- a small text editor.
 .SH SYNOPSIS
@@ -16,7 +16,7 @@ Supported languages are
   Rust
 
 .SH OPTIONS
-tin does not take any options.
+itn does not take any options.
 .SH SEE ALSO
 https://github.com/BeanGreen247/tin
 .SH BUGS
