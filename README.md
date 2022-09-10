@@ -3,7 +3,7 @@ tin
 
 |name|version|state|
 |:---:|:---:|:---:|
-|tin|devduild_alpha_0.0.3|testing|
+|tin|devduild_alpha_0.0.4|testing|
 
 States explained
 

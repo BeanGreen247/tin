@@ -1,6 +1,6 @@
 /* tin -- A very simple editor. Does not depend on libcurses, directly emits VT100
  *         escapes on the terminal. */
-#define TIN_VERSION "devduild_alpha_0.0.3"
+#define TIN_VERSION "devduild_alpha_0.0.4"
 
 #ifdef __linux__
 #define _POSIX_C_SOURCE 200809L
@@ -33,8 +33,16 @@
 #define HL_NUMBER 7
 #define HL_MATCH 8      /* Search match. */
 
+#define HL_NO_HIGHLIGHT_STRINGS (0<<6)
+#define HL_NO_HIGHLIGHT_NUMBERS (0<<7)
 #define HL_HIGHLIGHT_STRINGS (1<<0)
 #define HL_HIGHLIGHT_NUMBERS (1<<1)
+
+struct textSyntax {
+    char **filematch;
+    char **keywords;
+    int flags;
+};
 
 struct editorSyntax {
     char **filematch;
@@ -146,6 +154,12 @@ void editorSetStatusMessage(const char *fmt, ...);
 
 /* More languages will be added in the future */
 
+/* Text file */
+char *Text_extensions[] = {".txt",NULL};
+char *Text_keywords[] = {
+	NULL
+};
+
 /* C / C++ */
 char *C_HL_extensions[] = {".c",".h",".cpp",".hpp",".cc",NULL};
 char *C_HL_keywords[] = {
@@ -201,6 +215,17 @@ char *Rust_keywords[] = {
 
 /* Here we define an array of syntax highlights by extensions, keywords,
  * comments delimiters and flags. */
+struct textSyntax HLDB_Text[] = {
+    {
+       /* text */
+       Text_extensions,
+       Text_keywords,
+       HL_NO_HIGHLIGHT_STRINGS | HL_NO_HIGHLIGHT_NUMBERS
+    }
+};
+
+#define HLDB_TEXT_ENTRIES (sizeof(HLDB_Text)/sizeof(HLDB_Text[0]))
+
 struct editorSyntax HLDB[] = {
     {
         /* C / C++ */
@@ -651,6 +676,21 @@ int editorSyntaxToColor(int hl) {
 /* Select the syntax highlight scheme depending on the filename,
  * setting it in the global state E.syntax. */
 void editorSelectSyntaxHighlight(char *filename) {
+    for (unsigned int j = 0; j < HLDB_TEXT_ENTRIES; j++) {
+        struct editorSyntax *s = HLDB_Text+j;
+        unsigned int i = 0;
+        while(s->filematch[i]) {
+            char *p;
+            int patlen = strlen(s->filematch[i]);
+            if ((p = strstr(filename,s->filematch[i])) != NULL) {
+                if (s->filematch[i][0] != '.' || p[patlen] == '\0') {
+                    E.syntax = s;
+                    return;
+                }
+            }
+            i++;
+        }
+    }
     for (unsigned int j = 0; j < HLDB_ENTRIES; j++) {
         struct editorSyntax *s = HLDB+j;
         unsigned int i = 0;
